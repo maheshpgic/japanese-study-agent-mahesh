@@ -71,7 +71,7 @@
         setLoading(true);
 
         try {
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -79,31 +79,45 @@
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: `You are a friendly and knowledgeable Japanese language teacher. Help students learn Japanese effectively with clear explanations, examples, and encouragement. 
-
-User question: ${userMessage}`
+                  text: `You are a friendly and knowledgeable Japanese language teacher. Help students learn Japanese effectively with clear explanations, examples, and encouragement.\n\nUser question: ${userMessage}`
                 }]
               }],
               generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 1000,
+                maxOutputTokens: 2000,
               }
             })
           });
 
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Error:', errorData);
+            throw new Error(errorData.error?.message || 'API request failed');
+          }
+
           const data = await response.json();
           
-          if (data.candidates && data.candidates[0]) {
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
             const assistantMessage = data.candidates[0].content.parts[0].text;
             setMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
           } else {
-            throw new Error('Invalid response from API');
+            throw new Error('Invalid response format from API');
           }
         } catch (error) {
           console.error('Error:', error);
+          let errorMessage = 'Sorry, there was an error. ';
+          
+          if (error.message.includes('API_KEY_INVALID')) {
+            errorMessage += 'Your API key appears to be invalid. Please check it and try again.';
+          } else if (error.message.includes('quota')) {
+            errorMessage += 'API quota exceeded. Please try again later.';
+          } else {
+            errorMessage += error.message || 'Please check your API key and try again.';
+          }
+          
           setMessages([...newMessages, { 
             role: 'assistant', 
-            content: 'Sorry, there was an error. Please check your API key and try again.' 
+            content: errorMessage
           }]);
         }
         
@@ -167,7 +181,7 @@ User question: ${userMessage}`
                 
                 <div className="text-xs text-gray-500 space-y-1">
                   <p>• Get your free API key from Google AI Studio</p>
-                  <p>• Visit: ai.google.dev</p>
+                  <p>• Visit: aistudio.google.com/apikey</p>
                   <p>• Your key is stored locally and never sent anywhere else</p>
                 </div>
               </div>
@@ -286,94 +300,3 @@ User question: ${userMessage}`
   </script>
 </body>
 </html>
-```
-
-4. Click **"Commit new file"**
-
----
-
-## ✅ STEP 3: Verify Your Repository
-
-Go back to your repository main page. You should see:
-```
-japanese-study-agent/
-├── .gitignore
-├── package.json
-├── server.js
-└── public/
-    └── index.html
-```
-
-**Perfect!** All files are created! 🎉
-
----
-
-## 🚀 STEP 4: Deploy to Render
-
-Now let's make it live!
-
-1. Go to **https://render.com**
-2. Click **"Get Started for Free"**
-3. Sign up with **GitHub** (easier!)
-4. After signing in, click **"New +"** → **"Web Service"**
-5. You'll see your repositories - click **"Connect"** next to `japanese-study-agent`
-6. Fill in the settings:
-   - **Name:** `japanese-study-agent`
-   - **Region:** Choose closest to you
-   - **Branch:** `main`
-   - **Root Directory:** (leave blank)
-   - **Runtime:** `Node`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-   - **Instance Type:** Select **"Free"** ✅
-
-7. Click **"Create Web Service"**
-
-8. **Wait 2-3 minutes** while Render builds your app
-   - You'll see logs appearing
-   - Wait for "Your service is live" message
-
-9. **Copy your app URL** - it will be something like:
-   `https://japanese-study-agent.onrender.com`
-
----
-
-## 🎌 STEP 5: Get Gemini API Key
-
-1. Go to **https://ai.google.dev**
-2. Click **"Get API key in Google AI Studio"**
-3. Sign in with Google
-4. Click **"Create API Key"**
-5. Copy the key (starts with `AIza...`)
-
----
-
-## 🎉 STEP 6: Use Your App!
-
-1. Open your Render URL
-2. Enter your Gemini API key
-3. Click **"Start Learning"**
-4. Start chatting! Try: "Teach me basic hiragana"
-
----
-
-## 📸 Screenshot Guide
-
-Here's what you'll see at each step:
-
-**GitHub File Creation:**
-```
-1. Click "creating a new file"
-2. Type filename
-3. Paste code
-4. Click "Commit new file"
-5. Repeat for each file
-```
-
-**Render Deployment:**
-```
-1. Connect repository
-2. Fill settings
-3. Click "Create Web Service"
-4. Wait for "Live" status
-5. Visit your URL!
