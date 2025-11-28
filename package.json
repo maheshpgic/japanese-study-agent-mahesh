@@ -22,18 +22,4 @@
     "node": ">=14.0.0"
   }
 }
-```
 
-4. Click **"Commit new file"**
-
----
-
-#### **Create File 3: `.gitignore`**
-
-1. Click **"Add file"** → **"Create new file"**
-2. Name: `.gitignore`
-3. Paste this:
-```
-node_modules/
-.env
-.DS_Store
